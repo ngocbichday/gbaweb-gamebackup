@@ -5,6 +5,52 @@ const GAMES_PER_PAGE = 50;
 let currentPage = 1;
 let isListView = false;
 
+// Session Storage Keys
+const SESSION_STORAGE_KEY = 'downloadedGames';
+
+// Session Storage Functions for Download Tracking
+function getDownloadedGames() {
+    try {
+        const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+        console.error('Error reading downloaded games from session storage:', e);
+        return {};
+    }
+}
+
+function saveDownloadedGame(game) {
+    try {
+        const downloadedGames = getDownloadedGames();
+        // Use download_link as unique identifier (or title if link is not unique)
+        const gameId = game.download_link || game.title;
+        downloadedGames[gameId] = {
+            title: game.title,
+            download_link: game.download_link,
+            platform: game.platform,
+            thumbnail: game.thumbnail,
+            downloadedAt: new Date().toISOString()
+        };
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(downloadedGames));
+        console.log(`✅ Saved download state for: ${game.title}`);
+        return true;
+    } catch (e) {
+        console.error('Error saving downloaded game to session storage:', e);
+        return false;
+    }
+}
+
+function isGameDownloaded(game) {
+    const downloadedGames = getDownloadedGames();
+    const gameId = game.download_link || game.title;
+    return downloadedGames.hasOwnProperty(gameId);
+}
+
+function getDownloadedGamesCount() {
+    const downloadedGames = getDownloadedGames();
+    return Object.keys(downloadedGames).length;
+}
+
 
 
 // Popular games list - will be prioritized at the top
@@ -181,6 +227,12 @@ async function loadGames(retryCount = 0, fileName = 'games.json') {
         
         console.log(`✅ Successfully loaded ${validGames.length} games`);
         
+        // Show downloaded games count
+        const downloadedCount = getDownloadedGamesCount();
+        if (downloadedCount > 0) {
+            console.log(`📥 You have ${downloadedCount} downloaded game(s) in this session`);
+        }
+        
 
         
     } catch (error) {
@@ -333,38 +385,67 @@ function displayGames(games) {
         gameItem.classList.add('game');
         if (isListView) gameItem.classList.add('list-item');
         
+        // Check if game is downloaded
+        const isDownloaded = isGameDownloaded(game);
+        const downloadedClass = isDownloaded ? 'downloaded' : '';
+        const downloadText = isDownloaded ? 'Downloaded' : 'Download';
+        
         const popularBadge = isPopularGame(game.title) ? '<div class="popular-badge">🔥 Popular</div>' : '';
+        const downloadedBadge = isDownloaded ? '<div class="downloaded-badge">Downloaded</div>' : '';
         
         gameItem.innerHTML = isListView ? `
             <div class="game-image-container">
                 <img src="${game.thumbnail}" alt="${game.title}">
                 ${popularBadge}
+                ${downloadedBadge}
             </div>
             <div class="game-info">
                 <h3>${game.title}</h3>
                 <p><strong>Platform:</strong> ${game.platform}</p>
-                <a href="${game.download_link}" class="download-btn" target="_blank">
+                <a href="${game.download_link}" class="download-btn ${downloadedClass}" target="_blank" data-game-id="${game.download_link || game.title}">
                     <span class="download-spinner"></span>
-                    <span class="download-text">Download</span>
+                    <span class="download-text">${downloadText}</span>
                 </a>
             </div>
         ` : `
             <div class="game-image-container">
                 <img src="${game.thumbnail}" alt="${game.title}">
                 ${popularBadge}
+                ${downloadedBadge}
             </div>
             <div class="game-info">
                 <h3>${game.title}</h3>
                 <p><strong>Platform:</strong> ${game.platform}</p>
-                <a href="${game.download_link}" class="download-btn" target="_blank">
+                <a href="${game.download_link}" class="download-btn ${downloadedClass}" target="_blank" data-game-id="${game.download_link || game.title}">
                     <span class="download-spinner"></span>
-                    <span class="download-text">Download</span>
+                    <span class="download-text">${downloadText}</span>
                 </a>
             </div>
         `;
         setTimeout(() => {
             const btn = gameItem.querySelector('.download-btn');
             btn.addEventListener('click', function(e) {
+                // Save download state to session storage
+                saveDownloadedGame(game);
+                
+                // Update button appearance immediately
+                if (!btn.classList.contains('downloaded')) {
+                    btn.classList.add('downloaded');
+                    const downloadTextSpan = btn.querySelector('.download-text');
+                    if (downloadTextSpan) {
+                        downloadTextSpan.textContent = 'Downloaded';
+                    }
+                    
+                    // Add downloaded badge to game card
+                    const gameImageContainer = gameItem.querySelector('.game-image-container');
+                    if (gameImageContainer && !gameImageContainer.querySelector('.downloaded-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'downloaded-badge';
+                        badge.textContent = 'Downloaded';
+                        gameImageContainer.appendChild(badge);
+                    }
+                }
+                
                 // Add loading state
                 btn.classList.add('loading');
                 
