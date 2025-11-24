@@ -550,6 +550,69 @@
             }
         }
         
+        .downloaded-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: linear-gradient(45deg, #1AFF7A, #00D4AA);
+            color: #0f0f0f;
+            font-size: 6px;
+            font-family: 'Press Start 2P', monospace;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 8px;
+            border: 1px solid #ffffff;
+            box-shadow: 0 0 8px rgba(26, 255, 122, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            animation: downloaded-pulse 2s infinite;
+            z-index: 10;
+        }
+        
+        @keyframes downloaded-pulse {
+            0%, 100% {
+                box-shadow: 0 0 8px rgba(26, 255, 122, 0.8);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(26, 255, 122, 1);
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Downloaded button styling */
+        .download-btn.downloaded {
+            background: linear-gradient(45deg, #1AFF7A, #00D4AA);
+            color: #0f0f0f;
+            border-color: #1AFF7A;
+            box-shadow: 0 4px 15px rgba(26, 255, 122, 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .download-btn.downloaded:hover {
+            background: linear-gradient(45deg, #00D4AA, #1AFF7A);
+            box-shadow: 0 6px 20px rgba(26, 255, 122, 0.6), 0 3px 12px rgba(0, 0, 0, 0.5);
+            transform: translateY(-3px) scale(1.05);
+        }
+        
+        /* Light mode downloaded button */
+        body.light-mode .download-btn.downloaded {
+            background: linear-gradient(45deg, #1AFF7A, #00D4AA);
+            color: #0f0f0f;
+            border-color: #1AFF7A;
+            box-shadow: 0 0 10px rgba(26, 255, 122, 0.5), 0 2px 0 #00a0c0;
+        }
+        
+        body.light-mode .download-btn.downloaded:hover {
+            background: linear-gradient(45deg, #00D4AA, #1AFF7A);
+            box-shadow: 0 0 15px rgba(26, 255, 122, 0.7), 0 2px 0 #00a0c0;
+        }
+        
+        body.light-mode .downloaded-badge {
+            background: linear-gradient(45deg, #1AFF7A, #00D4AA);
+            color: #0f0f0f;
+            box-shadow: 0 0 10px rgba(26, 255, 122, 0.8);
+        }
+        
 
         
         /* Optimized download button */
@@ -595,13 +658,14 @@
         }
         
         .download-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
+            width: 10px;
+            height: 10px;
+            border: 1.5px solid transparent;
+            border-top: 1.5px solid currentColor;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             display: none;
+            flex-shrink: 0;
         }
         
         .download-btn.loading .download-spinner {
@@ -751,6 +815,11 @@
                 padding: 10px 16px;
             }
             
+            .download-spinner {
+                width: 9px;
+                height: 9px;
+            }
+            
             .game img {
                 max-height: 180px;
                 aspect-ratio: 1/1;
@@ -880,12 +949,27 @@
                 right: 6px;
                 border-width: 1px;
             }
+            
+            .downloaded-badge {
+                font-size: 4px;
+                padding: 2px 4px;
+                border-radius: 6px;
+                top: 6px;
+                left: 6px;
+                border-width: 1px;
+            }
         
             .download-btn {
                 padding: 8px 12px;
                 font-size: 9px;
                 border-radius: 4px;
                 border: 2px solid #ffffff;
+            }
+            
+            .download-spinner {
+                width: 8px;
+                height: 8px;
+                border-width: 1px;
             }
             
             .game img {
@@ -1621,7 +1705,6 @@
                 isDragging = false;
             }, { passive: true });
         }
-    });
     </script>
 </body>
 </html>
